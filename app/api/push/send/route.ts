@@ -1,29 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server'
 import webpush from 'web-push'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function POST(request: NextRequest) {
-  webpush.setVapidDetails(
-    process.env.VAPID_SUBJECT ?? 'mailto:admin@budgetmeup.app',
-    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? '',
-    process.env.VAPID_PRIVATE_KEY ?? ''
-  )
-
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
+  // 1. Verify the caller is authenticated
+  const sessionClient = await createClient()
+  const { data: { user } } = await sessionClient.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { title, body, icon, url } = await request.json()
+  // 2. Parse body
+  const { title, body, icon, url, userId } = await request.json()
 
-  const { data: subscriptions } = await supabase
-    .from('push_subscriptions')
-    .select('*')
-    .eq('user_id', user.id)
-
-  if (!subscriptions?.length) {
-    return NextResponse.json({ sent: 0 })
+  // 3. Resolve which user's subscriptions to target:
+  //    - If `userId` is provided and matches the session user, allow it.
+  //    - Otherwise default to the session user (self-send).
+  //    Using the admin client here lets us fetch subscriptions reliably
+  //    even if RLS is tightened in future, and enables server-triggered sends.
+  const targetUserId: string = userId ?? user.id
+  if (targetUserId !== user.id) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
+
+  const admin = createAdminClient()
+  const { data: subscriptions, error: fetchError } = await admin
+    .from('push_subscriptions')
+    .select('endpoint, p256dh, auth')
+    .eq('user_id', targetUserId)
+
+  if (fetchError) {
+    return NextResponse.json({ error: fetchError.message }, { status: 500 })
+  }
+  if (!subscriptions?.length) {
+    return NextResponse.json({ sent: 0, message: 'No subscriptions found' })
+  }
+
+  // 4. Configure VAPID — done inside the handler so the module loads cleanly at build time
+  const vapidSubject = process.env.VAPID_SUBJECT
+  const vapidPublic = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+  const vapidPrivate = process.env.VAPID_PRIVATE_KEY
+  if (!vapidSubject || !vapidPublic || !vapidPrivate) {
+    return NextResponse.json(
+      { error: 'Push not configured — set VAPID_SUBJECT, NEXT_PUBLIC_VAPID_PUBLIC_KEY, and VAPID_PRIVATE_KEY' },
+      { status: 503 }
+    )
+  }
+  webpush.setVapidDetails(vapidSubject, vapidPublic, vapidPrivate)
 
   const payload = JSON.stringify({
     title: title ?? 'BudgetMeUp',
@@ -33,6 +55,7 @@ export async function POST(request: NextRequest) {
     url: url ?? '/dashboard',
   })
 
+  // 5. Fan-out to all devices
   const results = await Promise.allSettled(
     subscriptions.map(sub =>
       webpush.sendNotification(
@@ -42,19 +65,24 @@ export async function POST(request: NextRequest) {
     )
   )
 
-  // Remove expired subscriptions
-  const expired = results
-    .map((r, i) => r.status === 'rejected' ? subscriptions[i].endpoint : null)
-    .filter(Boolean)
+  // 6. Clean up expired/invalid subscriptions (410 Gone)
+  const expiredEndpoints = results
+    .flatMap((r, i) => {
+      if (r.status === 'rejected') {
+        const status = (r.reason as { statusCode?: number })?.statusCode
+        if (status === 410 || status === 404) return [subscriptions[i].endpoint]
+      }
+      return []
+    })
 
-  if (expired.length > 0) {
-    await supabase
+  if (expiredEndpoints.length > 0) {
+    await admin
       .from('push_subscriptions')
       .delete()
-      .eq('user_id', user.id)
-      .in('endpoint', expired as string[])
+      .eq('user_id', targetUserId)
+      .in('endpoint', expiredEndpoints)
   }
 
   const sent = results.filter(r => r.status === 'fulfilled').length
-  return NextResponse.json({ sent })
+  return NextResponse.json({ sent, total: subscriptions.length })
 }

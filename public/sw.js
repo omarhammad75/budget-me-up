@@ -92,6 +92,30 @@ self.addEventListener('push', event => {
   )
 })
 
+// ── Subscription change (browser rotated keys) ───────────────────
+// Re-subscribes automatically and syncs the new endpoint to the server
+self.addEventListener('pushsubscriptionchange', event => {
+  event.waitUntil(
+    self.registration.pushManager.subscribe(event.oldSubscription.options)
+      .then(sub => {
+        const json = sub.toJSON()
+        const keys = json.keys ?? {}
+        return fetch('/api/push/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            endpoint: json.endpoint,
+            p256dh: keys.p256dh,
+            auth: keys.auth,
+          }),
+        })
+      })
+      .catch(() => {
+        // Silently fail — user will be prompted to re-enable next visit
+      })
+  )
+})
+
 // ── Notification click ────────────────────────────────────────────
 self.addEventListener('notificationclick', event => {
   event.notification.close()

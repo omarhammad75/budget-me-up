@@ -29,10 +29,14 @@ export default function SignUpPage() {
     setLoading(true)
     setError('')
 
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName } },
+      options: {
+        data: { full_name: fullName },
+        emailRedirectTo: `${appUrl}/dashboard`,
+      },
     })
 
     if (signUpError) {
