@@ -1,6 +1,6 @@
 'use client'
 
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
+import { PieChart, Pie, Cell, Tooltip } from 'recharts'
 import { motion } from 'framer-motion'
 import { formatCurrency } from '@/lib/utils/format'
 import type { SpendingByCategory } from '@/lib/types'
@@ -9,12 +9,13 @@ interface SpendingChartProps {
   data: SpendingByCategory[]
 }
 
-const FALLBACK_COLOR = '#475569'
+// Slightly larger donut for better balance
+const DONUT_SIZE = 124
 
 export function SpendingChart({ data }: SpendingChartProps) {
   if (!data.length) return null
 
-  const chartData = data.slice(0, 6).map(d => ({
+  const chartData = data.slice(0, 6).map((d) => ({
     name: d.category.name,
     value: d.amount,
     color: d.category.color,
@@ -29,70 +30,99 @@ export function SpendingChart({ data }: SpendingChartProps) {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.15 }}
-      className="mx-5 mt-4 rounded-2xl border border-border bg-card p-5"
+      className="mx-5 mt-4 rounded-2xl border p-4"
+      style={{
+        background: '#111827',
+        borderColor: 'rgba(255,255,255,0.06)',
+      }}
     >
-      <h2 className="text-sm font-semibold text-foreground mb-4">Spending Breakdown</h2>
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-foreground">Spending Breakdown</h2>
+        <span className="text-xs text-muted-foreground/60 font-mono-numbers">
+          {formatCurrency(total)}
+        </span>
+      </div>
 
-      <div className="flex gap-4 items-center">
-        {/* Pie chart */}
-        <div className="w-24 h-24 flex-shrink-0">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={chartData}
-                cx="50%"
-                cy="50%"
-                innerRadius={28}
-                outerRadius={44}
-                dataKey="value"
-                strokeWidth={0}
-              >
-                {chartData.map((entry, index) => (
-                  <Cell key={index} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip
-                content={({ active, payload }) => {
-                  if (active && payload?.[0]) {
-                    const d = payload[0].payload
-                    return (
-                      <div className="bg-card border border-border rounded-xl p-2.5 shadow-elevated text-xs">
-                        <p className="font-semibold">{d.icon} {d.name}</p>
-                        <p className="text-muted-foreground">{formatCurrency(d.value)}</p>
-                      </div>
-                    )
-                  }
-                  return null
-                }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
+      <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-center">
+        <div
+          className="relative flex-shrink-0"
+          style={{ width: DONUT_SIZE, height: DONUT_SIZE }}
+        >
+          <PieChart width={DONUT_SIZE} height={DONUT_SIZE}>
+            <Pie
+              data={chartData}
+              cx={DONUT_SIZE / 2}
+              cy={DONUT_SIZE / 2}
+              innerRadius={40}
+              outerRadius={54}
+              dataKey="value"
+              strokeWidth={0}
+              paddingAngle={2}
+            >
+              {chartData.map((entry, i) => (
+                <Cell key={i} fill={entry.color} />
+              ))}
+            </Pie>
+
+            <Tooltip
+              content={({ active, payload }) => {
+                if (active && payload?.[0]) {
+                  const d = payload[0].payload
+                  return (
+                    <div
+                      className="rounded-xl border px-3 py-2 text-xs shadow-lg"
+                      style={{
+                        background: '#1a2035',
+                        borderColor: 'rgba(255,255,255,0.08)',
+                      }}
+                    >
+                      <p className="font-semibold text-foreground">
+                        {d.icon} {d.name}
+                      </p>
+                      <p className="mt-0.5 text-muted-foreground">
+                        {formatCurrency(d.value)} · {Math.round(d.percentage)}%
+                      </p>
+                    </div>
+                  )
+                }
+                return null
+              }}
+            />
+          </PieChart>
+
+          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+            <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground/45">
+              Total
+            </p>
+            <p className="mt-1 text-base font-bold leading-none text-foreground font-mono-numbers">
+              {formatCurrency(total)}
+            </p>
+          </div>
         </div>
 
-        {/* Category list */}
-        <div className="flex-1 space-y-2.5 min-w-0">
+        <div className="w-full min-w-0 flex-1 space-y-3">
           {chartData.map((item, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <span className="text-base flex-shrink-0">{item.icon}</span>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-xs font-medium text-foreground truncate">{item.name}</span>
-                  <span className="text-xs font-semibold text-muted-foreground ml-2 flex-shrink-0">
-                    {Math.round(item.percentage)}%
+            <div key={i} className="flex flex-col items-center gap-5 sm:flex-row sm:items-center">
+              <div
+                className="h-2 w-2 rounded-full flex-shrink-0"
+                style={{ backgroundColor: item.color }}
+              />
+
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm leading-none">{item.icon}</span>
+                  <span className="truncate text-sm font-medium text-foreground/90">
+                    {item.name}
                   </span>
                 </div>
-                <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${item.percentage}%` }}
-                    transition={{ duration: 0.6, delay: 0.2 + i * 0.05, ease: 'easeOut' }}
-                    className="h-full rounded-full"
-                    style={{ backgroundColor: item.color }}
-                  />
-                </div>
               </div>
-              <span className="text-xs text-muted-foreground font-mono-numbers flex-shrink-0 ml-1">
+
+              <span className="flex-shrink-0 text-sm text-muted-foreground/70 font-mono-numbers tabular-nums">
                 {formatCurrency(item.value)}
+              </span>
+
+              <span className="w-9 flex-shrink-0 text-right text-xs text-muted-foreground/45 font-mono-numbers tabular-nums">
+                {Math.round(item.percentage)}%
               </span>
             </div>
           ))}

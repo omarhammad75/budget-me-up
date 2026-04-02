@@ -24,7 +24,7 @@ const buttonVariants = cva(
           'glass text-foreground hover:bg-white/10 border-white/10',
       },
       size: {
-        default: 'h-11 px-5 py-2',
+        default: 'h-12 px-5 py-2',
         sm: 'h-9 px-3 text-xs rounded-lg',
         lg: 'h-13 px-8 text-base rounded-2xl',
         icon: 'h-10 w-10 rounded-xl',

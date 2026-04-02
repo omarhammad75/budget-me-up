@@ -76,7 +76,7 @@ export function AddGoalSheet({ open, onOpenChange, goal, onSave, onDelete }: Add
                 <button
                   key={i}
                   onClick={() => setIcon(i)}
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl transition-all ${
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center text-base transition-all ${
                     icon === i ? 'bg-primary/20 border border-primary/50 scale-110' : 'bg-muted hover:bg-accent'
                   }`}
                 >

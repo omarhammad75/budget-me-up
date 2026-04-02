@@ -35,11 +35,11 @@ export function MobileNav({ onAddClick }: MobileNavProps) {
             whileTap={{ scale: 0.92 }}
             className="w-14 h-14 -mt-6 rounded-2xl bg-primary shadow-glow flex items-center justify-center"
             style={{
-              background: 'linear-gradient(135deg, #7C3AED 0%, #06B6D4 100%)',
-              boxShadow: '0 0 24px rgba(124,58,237,0.5), 0 4px 16px rgba(0,0,0,0.4)',
+              background: 'linear-gradient(135deg, #4F46E5 0%, #6366F1 100%)',
+              boxShadow: '0 0 24px rgba(99,102,241,0.5), 0 4px 16px rgba(0,0,0,0.4)',
             }}
           >
-            <Plus className="w-6 h-6 text-white" strokeWidth={2.5} />
+            <Plus className="w-5 h-5 text-white" strokeWidth={2.5} />
           </motion.button>
         </div>
 

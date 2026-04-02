@@ -149,8 +149,8 @@ function GoalCard({
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
           <div
-            className="w-11 h-11 rounded-2xl flex items-center justify-center text-2xl"
-            style={{ backgroundColor: `${goal.color}22` }}
+            className="w-7 h-7 rounded-xl flex items-center justify-center text-sm"
+            style={{ backgroundColor: `${goal.color}18`, border: `1px solid ${goal.color}22` }}
           >
             {goal.icon}
           </div>

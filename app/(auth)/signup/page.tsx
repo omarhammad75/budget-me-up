@@ -6,10 +6,10 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Loader2, Eye, EyeOff, Check } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Loader2, Eye, EyeOff, Check, ArrowRight, Mail } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Logo } from '@/components/shared/logo'
 import { createClient } from '@/lib/supabase/client'
 
 export default function SignUpPage() {
@@ -63,18 +63,34 @@ export default function SignUpPage() {
   if (success) {
     return (
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
+        initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="text-center"
+        className="text-center py-4"
       >
-        <div className="w-16 h-16 rounded-full bg-green-500/20 border border-green-500/30 flex items-center justify-center mx-auto mb-4">
-          <Check className="w-8 h-8 text-green-400" />
+        <div
+          className="w-16 h-16 rounded-3xl flex items-center justify-center mx-auto mb-5"
+          style={{
+            background: 'linear-gradient(135deg, rgba(34,197,94,0.2) 0%, rgba(34,197,94,0.08) 100%)',
+            border: '1px solid rgba(34,197,94,0.3)',
+          }}
+        >
+          <Mail className="w-7 h-7 text-green-400" />
         </div>
         <h2 className="text-xl font-bold text-foreground mb-2">Check your email</h2>
-        <p className="text-sm text-muted-foreground mb-6">
-          We sent a confirmation link to <strong>{email}</strong>. Click it to activate your account.
+        <p className="text-sm text-muted-foreground leading-relaxed mb-6">
+          We sent a confirmation link to{' '}
+          <strong className="text-foreground">{email}</strong>.
+          Click it to activate your account.
         </p>
-        <Link href="/login" className="text-primary text-sm font-medium hover:underline">
+        <div className="space-y-2 mb-6">
+          {['Check spam/junk if you don\'t see it', 'Link expires in 24 hours', 'One click to activate — no password needed'].map((tip) => (
+            <div key={tip} className="flex items-start gap-2 text-left">
+              <Check className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-muted-foreground">{tip}</p>
+            </div>
+          ))}
+        </div>
+        <Link href="/login" className="text-indigo-400 text-sm font-semibold hover:text-indigo-300 transition-colors">
           Back to login
         </Link>
       </motion.div>
@@ -87,25 +103,21 @@ export default function SignUpPage() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
+      {/* Logo + heading */}
       <div className="text-center mb-8">
-        <div className="w-16 h-16 rounded-3xl mx-auto mb-4 flex items-center justify-center text-3xl"
-          style={{
-            background: 'linear-gradient(135deg, #7C3AED 0%, #06B6D4 100%)',
-            boxShadow: '0 8px 32px rgba(124,58,237,0.4)',
-          }}
-        >
-          💰
-        </div>
-        <h1 className="text-2xl font-bold gradient-text">Create account</h1>
-        <p className="text-sm text-muted-foreground mt-1">Start tracking your finances</p>
+        <Logo size={52} className="justify-center mb-5" showWordmark={false} />
+        <h1 className="text-2xl font-bold text-foreground tracking-tight">Create your account</h1>
+        <p className="text-sm text-muted-foreground mt-1.5">Free forever · No credit card required</p>
       </div>
 
-      <form onSubmit={handleSignUp} className="space-y-4">
-        <div className="space-y-1.5">
-          <Label htmlFor="name">Your name</Label>
+      <form onSubmit={handleSignUp} className="space-y-5">
+        <div className="space-y-2">
+          <Label htmlFor="name" className="text-sm font-medium text-foreground/80">
+            Your name
+          </Label>
           <Input
             id="name"
-            placeholder="Your Name (first and last)"
+            placeholder="First and last name"
             value={fullName}
             onChange={e => setFullName(e.target.value)}
             autoComplete="name"
@@ -113,8 +125,10 @@ export default function SignUpPage() {
           />
         </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="email">Email</Label>
+        <div className="space-y-2">
+          <Label htmlFor="email" className="text-sm font-medium text-foreground/80">
+            Email address
+          </Label>
           <Input
             id="email"
             type="email"
@@ -126,24 +140,26 @@ export default function SignUpPage() {
           />
         </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="password">Password</Label>
+        <div className="space-y-2">
+          <Label htmlFor="password" className="text-sm font-medium text-foreground/80">
+            Password
+          </Label>
           <div className="relative">
             <Input
               id="password"
               type={showPassword ? 'text' : 'password'}
-              placeholder="••••••••"
+              placeholder="At least 6 characters"
               value={password}
               onChange={e => setPassword(e.target.value)}
               autoComplete="new-password"
               required
               minLength={6}
-              className="pr-11"
+              className="pr-12"
             />
             <button
               type="button"
               onClick={() => setShowPassword(p => !p)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-white/5"
             >
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
@@ -151,18 +167,48 @@ export default function SignUpPage() {
         </div>
 
         {error && (
-          <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 px-3 py-2 rounded-xl">
+          <motion.p
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-sm text-red-400 bg-red-500/8 border border-red-500/20 px-4 py-3 rounded-xl"
+          >
             {error}
-          </p>
+          </motion.p>
         )}
 
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Create account'}
-        </Button>
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full rounded-2xl font-semibold text-base text-white flex items-center justify-center gap-2 transition-all duration-200 hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none mt-2"
+          style={{
+            background: 'linear-gradient(135deg, #4F46E5 0%, #6366F1 100%)',
+            boxShadow: '0 0 24px rgba(99,102,241,0.3), 0 4px 12px rgba(0,0,0,0.25)',
+            minHeight: 52,
+          }}
+        >
+          {loading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <>
+              Create account
+              <ArrowRight className="w-4 h-4" />
+            </>
+          )}
+        </button>
+
+        <p className="text-xs text-center text-muted-foreground/50 leading-relaxed">
+          By creating an account you agree to our terms of use.
+        </p>
+
+        <div className="relative flex items-center gap-3">
+          <div className="flex-1 h-px bg-border" />
+          <span className="text-xs text-muted-foreground/50">or</span>
+          <div className="flex-1 h-px bg-border" />
+        </div>
 
         <p className="text-center text-sm text-muted-foreground">
           Already have an account?{' '}
-          <Link href="/login" className="text-primary font-medium hover:underline">
+          <Link href="/login" className="text-indigo-400 font-semibold hover:text-indigo-300 transition-colors">
             Sign in
           </Link>
         </p>

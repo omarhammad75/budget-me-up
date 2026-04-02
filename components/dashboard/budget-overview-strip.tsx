@@ -3,7 +3,6 @@
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
-import { Progress } from '@/components/ui/progress'
 import { formatCurrency } from '@/lib/utils/format'
 import type { Budget, Transaction } from '@/lib/types'
 
@@ -34,40 +33,71 @@ export function BudgetOverviewStrip({ budgets, transactions }: BudgetOverviewStr
         <h2 className="text-sm font-semibold text-foreground">Budgets</h2>
         <Link
           href="/budgets"
-          className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 font-medium transition-colors"
+          className="flex items-center gap-1 text-xs text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
         >
           Manage <ArrowRight className="w-3 h-3" />
         </Link>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card divide-y divide-border/50 overflow-hidden">
-        {budgetsWithSpent.map((b, i) => (
-          <div key={b.id} className="px-4 py-3">
-            <div className="flex items-center justify-between mb-1.5">
-              <div className="flex items-center gap-2">
-                <span className="text-base">{b.category?.icon}</span>
-                <span className="text-sm font-medium text-foreground">{b.category?.name}</span>
+      <div
+        className="rounded-2xl border overflow-hidden"
+        style={{ background: '#111827', borderColor: 'rgba(255,255,255,0.06)' }}
+      >
+        {budgetsWithSpent.map((b, i) => {
+          const barColor =
+            b.pct >= 100 ? '#EF4444' :
+            b.pct >= 80  ? '#F59E0B' :
+            '#22C55E'
+
+          return (
+            <div
+              key={b.id}
+              className={`px-4 py-3 ${i > 0 ? 'border-t border-white/4' : ''}`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2.5">
+                  <div
+                    className="w-6 h-6 rounded-lg flex items-center justify-center text-xs flex-shrink-0"
+                    style={{ background: `${barColor}12`, border: `1px solid ${barColor}18` }}
+                  >
+                    {b.category?.icon}
+                  </div>
+                  <span className="text-[13px] font-medium text-foreground">{b.category?.name}</span>
+                </div>
+                <div className="text-right">
+                  <span
+                    className="text-sm font-bold font-mono-numbers"
+                    style={{ color: b.pct >= 100 ? '#FC8181' : b.pct >= 80 ? '#FCD34D' : '#F9FAFB' }}
+                  >
+                    {formatCurrency(b.spent)}
+                  </span>
+                  <span className="text-xs text-muted-foreground/40 font-mono-numbers">
+                    {' '}/ {formatCurrency(b.amount)}
+                  </span>
+                </div>
               </div>
-              <div className="text-right">
-                <span className={`text-xs font-semibold font-mono-numbers ${
-                  b.pct >= 100 ? 'text-red-400' : b.pct >= 80 ? 'text-yellow-400' : 'text-muted-foreground'
-                }`}>
-                  {formatCurrency(b.spent)}
-                </span>
-                <span className="text-xs text-muted-foreground/50"> / {formatCurrency(b.amount)}</span>
+
+              {/* Progress track */}
+              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${b.pct}%` }}
+                  transition={{ duration: 0.7, delay: 0.1 + i * 0.06, ease: 'easeOut' }}
+                  className="h-full rounded-full"
+                  style={{
+                    background: `linear-gradient(90deg, ${barColor}99, ${barColor})`,
+                    boxShadow: b.pct >= 80 ? `0 0 6px ${barColor}60` : 'none',
+                  }}
+                />
               </div>
+
+              {/* Pct label */}
+              <p className="text-[10px] mt-1 font-medium" style={{ color: `${barColor}99` }}>
+                {Math.round(b.pct)}% of budget used
+              </p>
             </div>
-            <Progress
-              value={b.pct}
-              className="h-1.5"
-              indicatorClassName={
-                b.pct >= 100 ? 'from-red-500 to-red-400' :
-                b.pct >= 80 ? 'from-yellow-500 to-yellow-400' :
-                undefined
-              }
-            />
-          </div>
-        ))}
+          )
+        })}
       </div>
     </motion.div>
   )

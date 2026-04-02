@@ -17,37 +17,46 @@ export function TransactionItem({ transaction, index = 0, onClick }: Transaction
 
   return (
     <motion.button
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25, delay: index * 0.04, ease: 'easeOut' }}
+      transition={{ duration: 0.2, delay: index * 0.03, ease: 'easeOut' }}
       onClick={onClick}
-      className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-accent/50 active:bg-accent transition-colors duration-150 text-left"
+      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/3 active:bg-white/5 transition-colors duration-150 text-left"
+      style={{ minHeight: 52 }}
     >
-      <CategoryIcon category={transaction.category} size="md" />
+      {/* Category icon — compact */}
+      <CategoryIcon category={transaction.category} size="xs" />
 
+      {/* Description + meta */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-foreground truncate">{transaction.description}</p>
-        <div className="flex items-center gap-1.5 mt-0.5">
-          <p className="text-xs text-muted-foreground">
-            {transaction.category?.name ?? 'Uncategorized'}
+        <div className="flex items-center gap-1">
+          <p className="text-[13px] font-medium text-foreground truncate leading-snug">
+            {transaction.description}
           </p>
-          <span className="text-muted-foreground/40 text-xs">·</span>
-          <p className="text-xs text-muted-foreground">{formatDate(transaction.date)}</p>
           {transaction.is_recurring && (
-            <Repeat className="w-3 h-3 text-primary ml-0.5" />
+            <Repeat className="w-2.5 h-2.5 text-indigo-400/70 flex-shrink-0" />
           )}
         </div>
+        <p className="text-[11px] text-muted-foreground/50 mt-0.5 truncate">
+          {transaction.category?.name ?? 'Uncategorized'}
+          <span className="mx-1 text-muted-foreground/25">·</span>
+          {formatDate(transaction.date)}
+        </p>
       </div>
 
+      {/* Amount */}
       <div className="text-right flex-shrink-0">
-        <p className={`text-sm font-semibold font-mono-numbers ${
-          isExpense ? 'text-red-400' : 'text-green-400'
-        }`}>
-          {isExpense ? '-' : '+'}
+        <p
+          className="text-[13px] font-semibold font-mono-numbers tabular-nums"
+          style={{ color: isExpense ? '#F87171' : '#4ADE80' }}
+        >
+          {isExpense ? '−' : '+'}
           {formatCurrency(transaction.amount)}
         </p>
         {transaction.notes && (
-          <p className="text-xs text-muted-foreground/60 truncate max-w-[80px]">{transaction.notes}</p>
+          <p className="text-[10px] text-muted-foreground/35 truncate max-w-[68px] mt-0.5">
+            {transaction.notes}
+          </p>
         )}
       </div>
     </motion.button>

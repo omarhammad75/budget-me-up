@@ -51,7 +51,7 @@ export default function BudgetsPage() {
             animate={{ opacity: 1, y: 0 }}
             className="rounded-2xl border border-border bg-card p-5"
             style={{
-              background: 'linear-gradient(135deg, rgba(124,58,237,0.1) 0%, rgba(6,182,212,0.05) 100%)',
+              background: 'linear-gradient(135deg, rgba(99,102,241,0.1) 0%, rgba(34,197,94,0.04) 100%)',
             }}
           >
             <div className="flex items-center justify-between mb-3">
@@ -157,8 +157,8 @@ function BudgetCard({
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
           <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
-            style={{ backgroundColor: `${budget.category?.color}22` }}
+            className="w-7 h-7 rounded-xl flex items-center justify-center text-sm"
+            style={{ backgroundColor: `${budget.category?.color}18`, border: `1px solid ${budget.category?.color}22` }}
           >
             {budget.category?.icon}
           </div>
