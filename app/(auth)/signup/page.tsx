@@ -101,7 +101,7 @@ export default function SignUpPage() {
           <Label htmlFor="name">Your name</Label>
           <Input
             id="name"
-            placeholder="Your Full Name"
+            placeholder="Your Name (first and last)"
             value={fullName}
             onChange={e => setFullName(e.target.value)}
             autoComplete="name"
