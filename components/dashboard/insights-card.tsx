@@ -10,25 +10,28 @@ interface InsightsCardProps {
 
 const variantConfig = {
   warning: {
-    bg: 'rgba(245,158,11,0.08)',
-    border: 'rgba(245,158,11,0.18)',
-    iconBg: 'rgba(245,158,11,0.12)',
-    textColor: '#F59E0B',
-    Icon: AlertTriangle,
+    bg:        'rgba(251,191,36,0.05)',
+    border:    'rgba(251,191,36,0.14)',
+    iconBg:    'rgba(251,191,36,0.1)',
+    iconBorder:'rgba(251,191,36,0.18)',
+    textColor: '#FBBF24',
+    Icon:      AlertTriangle,
   },
   success: {
-    bg: 'rgba(34,197,94,0.07)',
-    border: 'rgba(34,197,94,0.15)',
-    iconBg: 'rgba(34,197,94,0.12)',
-    textColor: '#22C55E',
-    Icon: CheckCircle2,
+    bg:        'rgba(74,222,128,0.05)',
+    border:    'rgba(74,222,128,0.12)',
+    iconBg:    'rgba(74,222,128,0.1)',
+    iconBorder:'rgba(74,222,128,0.18)',
+    textColor: '#4ADE80',
+    Icon:      CheckCircle2,
   },
   info: {
-    bg: 'rgba(99,102,241,0.08)',
-    border: 'rgba(99,102,241,0.18)',
-    iconBg: 'rgba(99,102,241,0.12)',
+    bg:        'rgba(99,102,241,0.05)',
+    border:    'rgba(99,102,241,0.14)',
+    iconBg:    'rgba(99,102,241,0.1)',
+    iconBorder:'rgba(99,102,241,0.18)',
     textColor: '#818CF8',
-    Icon: Info,
+    Icon:      Info,
   },
 }
 
@@ -42,33 +45,33 @@ export function InsightsCard({ insights }: InsightsCardProps) {
       transition={{ duration: 0.4, delay: 0.25 }}
       className="mx-5 mt-4"
     >
-      <h2 className="text-sm font-semibold text-foreground mb-3">Smart Insights</h2>
-      <div className="space-y-2.5">
+      <h2 className="text-[13px] font-semibold text-foreground mb-2.5">Insights</h2>
+
+      <div className="space-y-2">
         {insights.map((insight, i) => {
-          const cfg = variantConfig[insight.type]
+          const cfg  = variantConfig[insight.type]
           const Icon = cfg.Icon
           return (
             <motion.div
               key={i}
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 + i * 0.08 }}
-              className="flex items-start gap-3 p-3.5 rounded-2xl border"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.28 + i * 0.07 }}
+              className="flex items-start gap-3 px-3.5 py-3 rounded-xl border"
               style={{ background: cfg.bg, borderColor: cfg.border }}
             >
-              {/* Icon badge */}
               <div
-                className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
-                style={{ background: cfg.iconBg }}
+                className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 border"
+                style={{ background: cfg.iconBg, borderColor: cfg.iconBorder }}
               >
-                <Icon className="w-3.5 h-3.5" style={{ color: cfg.textColor }} strokeWidth={1.75} />
+                <Icon className="w-3 h-3" style={{ color: cfg.textColor }} strokeWidth={2} />
               </div>
 
-              <div className="min-w-0">
-                <p className="text-sm font-semibold leading-snug" style={{ color: cfg.textColor }}>
+              <div className="min-w-0 flex-1">
+                <p className="text-[12px] font-semibold leading-snug" style={{ color: cfg.textColor }}>
                   {insight.title}
                 </p>
-                <p className="text-xs text-muted-foreground/70 mt-1 leading-relaxed">
+                <p className="text-[11px] text-muted-foreground/60 mt-0.5 leading-relaxed">
                   {insight.message}
                 </p>
               </div>

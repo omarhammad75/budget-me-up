@@ -29,11 +29,11 @@ export function BudgetOverviewStrip({ budgets, transactions }: BudgetOverviewStr
       transition={{ duration: 0.4, delay: 0.2 }}
       className="mx-5 mt-4"
     >
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-semibold text-foreground">Budgets</h2>
+      <div className="flex items-center justify-between mb-2.5">
+        <h2 className="text-[13px] font-semibold text-foreground">Budgets</h2>
         <Link
           href="/budgets"
-          className="flex items-center gap-1 text-xs text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
+          className="flex items-center gap-1 text-[11px] text-indigo-400/80 hover:text-indigo-300 font-medium transition-colors"
         >
           Manage <ArrowRight className="w-3 h-3" />
         </Link>
@@ -44,56 +44,66 @@ export function BudgetOverviewStrip({ budgets, transactions }: BudgetOverviewStr
         style={{ background: '#111827', borderColor: 'rgba(255,255,255,0.06)' }}
       >
         {budgetsWithSpent.map((b, i) => {
-          const barColor =
-            b.pct >= 100 ? '#EF4444' :
-            b.pct >= 80  ? '#F59E0B' :
-            '#22C55E'
+          const isOver   = b.pct >= 100
+          const isNear   = b.pct >= 80
+          const barColor = isOver ? '#F87171' : isNear ? '#FBBF24' : '#4ADE80'
 
           return (
             <div
               key={b.id}
-              className={`px-4 py-3 ${i > 0 ? 'border-t border-white/4' : ''}`}
+              className={`px-4 py-3 ${i > 0 ? 'border-t' : ''}`}
+              style={{ borderColor: 'rgba(255,255,255,0.04)' }}
             >
               <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2.5">
+                {/* Left: icon + name */}
+                <div className="flex items-center gap-2.5 min-w-0">
                   <div
-                    className="w-6 h-6 rounded-lg flex items-center justify-center text-xs flex-shrink-0"
-                    style={{ background: `${barColor}12`, border: `1px solid ${barColor}18` }}
+                    className="w-5 h-5 rounded-md flex items-center justify-center text-[10px] flex-shrink-0"
+                    style={{ background: `${barColor}14`, border: `1px solid ${barColor}20` }}
                   >
                     {b.category?.icon}
                   </div>
-                  <span className="text-[13px] font-medium text-foreground">{b.category?.name}</span>
+                  <span className="text-[12px] font-medium text-foreground/85 truncate">
+                    {b.category?.name}
+                  </span>
                 </div>
-                <div className="text-right">
+
+                {/* Right: spent / budget */}
+                <div className="flex-shrink-0 text-right ml-3">
                   <span
-                    className="text-sm font-bold font-mono-numbers"
-                    style={{ color: b.pct >= 100 ? '#FC8181' : b.pct >= 80 ? '#FCD34D' : '#F9FAFB' }}
+                    className="text-[12px] font-semibold font-mono-numbers tabular-nums"
+                    style={{ color: isOver ? '#F87171' : isNear ? '#FBBF24' : 'rgba(249,250,251,0.75)' }}
                   >
                     {formatCurrency(b.spent)}
                   </span>
-                  <span className="text-xs text-muted-foreground/40 font-mono-numbers">
+                  <span className="text-[11px] text-muted-foreground/30 font-mono-numbers">
                     {' '}/ {formatCurrency(b.amount)}
                   </span>
                 </div>
               </div>
 
-              {/* Progress track */}
-              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+              {/* Bar */}
+              <div
+                className="h-1 rounded-full overflow-hidden"
+                style={{ background: 'rgba(255,255,255,0.07)' }}
+              >
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${b.pct}%` }}
-                  transition={{ duration: 0.7, delay: 0.1 + i * 0.06, ease: 'easeOut' }}
+                  transition={{ duration: 0.65, delay: 0.1 + i * 0.06, ease: [0.16, 1, 0.3, 1] }}
                   className="h-full rounded-full"
                   style={{
-                    background: `linear-gradient(90deg, ${barColor}99, ${barColor})`,
-                    boxShadow: b.pct >= 80 ? `0 0 6px ${barColor}60` : 'none',
+                    background: `linear-gradient(90deg, ${barColor}88, ${barColor})`,
+                    boxShadow:  isNear ? `0 0 5px ${barColor}55` : 'none',
                   }}
                 />
               </div>
 
-              {/* Pct label */}
-              <p className="text-[10px] mt-1 font-medium" style={{ color: `${barColor}99` }}>
-                {Math.round(b.pct)}% of budget used
+              <p
+                className="text-[10px] mt-1.5 font-medium"
+                style={{ color: `${barColor}80` }}
+              >
+                {Math.round(b.pct)}% used
               </p>
             </div>
           )

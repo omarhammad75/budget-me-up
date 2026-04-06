@@ -22,45 +22,46 @@ export function TransactionItem({ transaction, index = 0, onClick }: Transaction
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2, delay: index * 0.03, ease: 'easeOut' }}
       onClick={onClick}
-      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/3 active:bg-white/5 transition-colors duration-150 text-left"
-      style={{ minHeight: 52 }}
+      className="w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors duration-150"
+      style={{ minHeight: 56 }}
+      whileTap={{ backgroundColor: 'rgba(255,255,255,0.04)' }}
     >
-      {/* Category icon — compact */}
+      {/* Category icon */}
       <CategoryIcon category={transaction.category} size="xs" />
 
       {/* Description + meta */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1">
-          <p className="text-[13px] font-medium text-foreground truncate leading-snug">
+        <div className="flex items-center gap-1.5">
+          <p className="text-[13px] font-medium text-foreground/90 truncate leading-snug">
             {transaction.description}
           </p>
           {transaction.is_recurring && (
-            <Repeat className="w-2.5 h-2.5 text-indigo-400/70 flex-shrink-0" />
+            <Repeat className="w-2.5 h-2.5 text-indigo-400/50 flex-shrink-0" />
           )}
         </div>
-        <p className="text-[11px] text-muted-foreground/50 mt-0.5 truncate">
+        <p className="text-[11px] text-muted-foreground/40 mt-0.5 truncate leading-none">
           {transaction.category?.name ?? 'Uncategorized'}
-          <span className="mx-1 text-muted-foreground/25">·</span>
+          <span className="mx-1 opacity-40">·</span>
           {formatDate(transaction.date)}
         </p>
         {transaction.tag_type && (
-          <div className="mt-1">
+          <div className="mt-1.5">
             <TagBadge transaction={transaction} />
           </div>
         )}
       </div>
 
       {/* Amount */}
-      <div className="text-right flex-shrink-0">
+      <div className="text-right flex-shrink-0 pl-2">
         <p
-          className="text-[13px] font-semibold font-mono-numbers tabular-nums"
+          className="text-[13px] font-semibold font-mono-numbers tabular-nums leading-none"
           style={{ color: isExpense ? '#F87171' : '#4ADE80' }}
         >
           {isExpense ? '−' : '+'}
           {formatCurrency(transaction.amount)}
         </p>
         {transaction.notes && (
-          <p className="text-[10px] text-muted-foreground/35 truncate max-w-[68px] mt-0.5">
+          <p className="text-[10px] text-muted-foreground/30 truncate max-w-[72px] mt-1">
             {transaction.notes}
           </p>
         )}

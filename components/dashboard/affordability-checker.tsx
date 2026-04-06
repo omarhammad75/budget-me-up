@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { DollarSign, CheckCircle2, AlertTriangle, XCircle, ChevronRight, Info } from 'lucide-react'
+import { DollarSign, CheckCircle2, AlertTriangle, XCircle, ChevronRight, ArrowRight, Info } from 'lucide-react'
 import {
   Sheet,
   SheetContent,
@@ -303,25 +303,67 @@ interface AffordabilityTriggerProps {
 
 export function AffordabilityTrigger({ onClick }: AffordabilityTriggerProps) {
   return (
-    <button
+    <motion.button
       onClick={onClick}
-      className="w-full flex items-center gap-2 px-4 py-3 rounded-2xl border text-sm font-medium transition-all duration-200 hover:border-indigo-500/35 active:scale-[0.99]"
+      whileTap={{ scale: 0.98 }}
+      transition={{ duration: 0.12 }}
+      className="w-full relative rounded-2xl border overflow-hidden text-left group"
       style={{
-        background:  'rgba(99,102,241,0.07)',
-        borderColor: 'rgba(99,102,241,0.16)',
-        color:       '#818CF8',
-        minHeight:   48,
+        background:  '#111827',
+        borderColor: 'rgba(99,102,241,0.18)',
+        boxShadow:   '0 1px 6px rgba(0,0,0,0.2)',
       }}
     >
+      {/* Top accent line */}
       <div
-        className="w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0"
-        style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.25)' }}
-      >
-        <DollarSign className="w-3.5 h-3.5 text-indigo-400" strokeWidth={2} />
+        className="absolute top-0 left-0 right-0 h-px"
+        style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(99,102,241,0.4) 50%, transparent 90%)' }}
+      />
+
+      {/* Hover tint */}
+      <div
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-250 pointer-events-none"
+        style={{ background: 'rgba(99,102,241,0.03)' }}
+      />
+
+      <div className="relative flex items-center gap-3 px-4 py-3">
+
+        {/* Icon */}
+        <div
+          className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+          style={{
+            background: 'rgba(79,70,229,0.16)',
+            border:     '1px solid rgba(99,102,241,0.25)',
+          }}
+        >
+          <DollarSign className="w-3.5 h-3.5 text-indigo-400" strokeWidth={1.75} />
+        </div>
+
+        {/* Copy */}
+        <div className="flex-1 min-w-0">
+          <p className="text-[13px] font-semibold text-indigo-200/90 leading-none mb-1">
+            Can I afford this?
+          </p>
+          <p className="text-[11px] text-muted-foreground/45 leading-none">
+            Check any purchase against your safe-to-spend
+          </p>
+        </div>
+
+        {/* CTA */}
+        <div
+          className="flex items-center gap-0.5 px-2.5 py-1 rounded-md flex-shrink-0"
+          style={{
+            background:  'rgba(79,70,229,0.15)',
+            border:      '1px solid rgba(99,102,241,0.22)',
+          }}
+        >
+          <span className="text-[11px] font-semibold text-indigo-300/90 whitespace-nowrap">
+            Try it
+          </span>
+          <ChevronRight className="w-3 h-3 text-indigo-400/55 transition-transform duration-200 group-hover:translate-x-px" />
+        </div>
+
       </div>
-      <span className="flex-1 text-left">Can I afford this?</span>
-      <span className="text-[11px] text-muted-foreground/40 mr-1">Try it</span>
-      <ChevronRight className="w-3.5 h-3.5 opacity-35" />
-    </button>
+    </motion.button>
   )
 }

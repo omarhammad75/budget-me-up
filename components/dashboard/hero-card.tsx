@@ -14,12 +14,12 @@ interface HeroCardProps {
 }
 
 function getMoodMessage(pct: number, safeToSpend: number): { text: string; color: string } {
-  if (safeToSpend < 0) return { text: 'Over budget — time to pause spending', color: '#EF4444' }
-  if (pct >= 90) return { text: 'Almost at your limit — spend carefully', color: '#F59E0B' }
-  if (pct >= 75) return { text: 'Getting close — watch your spending', color: '#F59E0B' }
-  if (pct >= 50) return { text: 'On track — you\'re doing well', color: '#6366F1' }
-  if (pct >= 20) return { text: 'You\'re doing great this month ✦', color: '#22C55E' }
-  return { text: 'Month is wide open — great start ✦', color: '#22C55E' }
+  if (safeToSpend < 0)  return { text: 'Over budget — pause spending for now', color: '#F87171' }
+  if (pct >= 90)        return { text: 'Almost at your limit — spend carefully', color: '#FBBF24' }
+  if (pct >= 75)        return { text: 'Getting close — watch your spending', color: '#FBBF24' }
+  if (pct >= 50)        return { text: 'On track — you\'re doing well', color: '#818CF8' }
+  if (pct >= 20)        return { text: 'You\'re doing great this month', color: '#4ADE80' }
+  return                       { text: 'Wide open — great start to the month', color: '#4ADE80' }
 }
 
 export function HeroCard({
@@ -30,17 +30,18 @@ export function HeroCard({
   totalSpent,
   month,
 }: HeroCardProps) {
-  const pct = Math.min(budgetUsedPercent, 100)
-  const isOverBudget = budgetUsedPercent > 100
+  const pct           = Math.min(budgetUsedPercent, 100)
+  const isOverBudget  = budgetUsedPercent > 100
+  const mood          = getMoodMessage(pct, safeToSpend)
 
-  const getProgressColor = () => {
-    if (pct >= 100) return '#EF4444'
-    if (pct >= 80) return '#F59E0B'
-    return '#22C55E'
-  }
+  const progressColor =
+    pct >= 100 ? '#F87171' :
+    pct >= 80  ? '#FBBF24' :
+    '#4ADE80'
 
-  const progressColor = getProgressColor()
-  const mood = getMoodMessage(pct, safeToSpend)
+  const badgeBg      = isOverBudget ? 'rgba(248,113,113,0.12)' : pct >= 80 ? 'rgba(251,191,36,0.12)' : 'rgba(74,222,128,0.1)'
+  const badgeBorder  = isOverBudget ? 'rgba(248,113,113,0.28)' : pct >= 80 ? 'rgba(251,191,36,0.28)' : 'rgba(74,222,128,0.22)'
+  const badgeColor   = isOverBudget ? '#F87171'                : pct >= 80 ? '#FBBF24'                : '#4ADE80'
 
   return (
     <motion.div
@@ -49,69 +50,72 @@ export function HeroCard({
       transition={{ duration: 0.4, ease: 'easeOut' }}
       className="mx-5 mt-3 rounded-3xl overflow-hidden relative"
       style={{
-        background: 'linear-gradient(145deg, #1e1b4b 0%, #141c2e 50%, #0f1520 100%)',
-        boxShadow: '0 12px 48px rgba(99,102,241,0.2), 0 2px 8px rgba(0,0,0,0.5)',
-        border: '1px solid rgba(99,102,241,0.18)',
+        background:  'linear-gradient(145deg, #1e1b4b 0%, #141c2e 55%, #0f1520 100%)',
+        boxShadow:   '0 16px 56px rgba(79,70,229,0.22), 0 2px 8px rgba(0,0,0,0.6)',
+        border:      '1px solid rgba(99,102,241,0.2)',
       }}
     >
-      {/* Ambient glow orbs */}
+      {/* Top-left ambient glow */}
       <div
-        className="absolute top-0 left-0 w-56 h-56 pointer-events-none opacity-25"
-        style={{ background: 'radial-gradient(circle, #6366F1 0%, transparent 65%)' }}
+        className="absolute top-0 left-0 w-64 h-48 pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse at 0% 0%, rgba(99,102,241,0.2) 0%, transparent 65%)' }}
       />
+      {/* Bottom-right green accent */}
       <div
-        className="absolute bottom-0 right-0 w-36 h-36 pointer-events-none opacity-20"
-        style={{ background: 'radial-gradient(circle, #22C55E 0%, transparent 65%)' }}
+        className="absolute bottom-0 right-0 w-48 h-32 pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse at 100% 100%, rgba(74,222,128,0.12) 0%, transparent 65%)' }}
       />
 
       <div className="relative p-6">
         {/* Month + status badge */}
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-xs font-medium text-white/40 uppercase tracking-widest">{month}</span>
+        <div className="flex items-center justify-between mb-5">
+          <span className="text-[11px] font-medium text-white/35 uppercase tracking-widest">{month}</span>
           <span
-            className="text-xs font-semibold px-2.5 py-1 rounded-full border"
-            style={{
-              background: isOverBudget
-                ? 'rgba(239,68,68,0.12)'
-                : pct >= 80
-                ? 'rgba(245,158,11,0.12)'
-                : 'rgba(34,197,94,0.12)',
-              borderColor: isOverBudget
-                ? 'rgba(239,68,68,0.25)'
-                : pct >= 80
-                ? 'rgba(245,158,11,0.25)'
-                : 'rgba(34,197,94,0.25)',
-              color: isOverBudget ? '#EF4444' : pct >= 80 ? '#F59E0B' : '#22C55E',
-            }}
+            className="text-[11px] font-semibold px-2.5 py-1 rounded-full border"
+            style={{ background: badgeBg, borderColor: badgeBorder, color: badgeColor }}
           >
             {isOverBudget ? '⚠ Over budget' : `${Math.round(pct)}% used`}
           </span>
         </div>
 
-        {/* Safe to spend — dominant */}
-        <div className="mb-1">
-          <p className="text-xs text-white/40 uppercase tracking-wider mb-2">Safe to spend</p>
-          <motion.p
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1, duration: 0.35 }}
-            className="font-bold text-white tracking-tight font-mono-numbers leading-none"
+        {/* ── Safe to spend — dominant focal point ── */}
+        <div className="mb-4 relative">
+          {/* Glow bloom behind the number */}
+          <div
+            className="absolute pointer-events-none"
             style={{
-              fontSize: 'clamp(2.5rem, 8vw, 3.5rem)',
-              textShadow: '0 0 40px rgba(99,102,241,0.35)',
+              top: '50%', left: 0,
+              transform: 'translateY(-50%)',
+              width: 200, height: 80,
+              background: 'radial-gradient(ellipse at 20% 50%, rgba(99,102,241,0.28) 0%, transparent 70%)',
+              filter: 'blur(16px)',
+            }}
+          />
+
+          <p className="text-[11px] font-medium text-white/40 uppercase tracking-widest mb-2 relative">
+            Safe to spend
+          </p>
+          <motion.p
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1, duration: 0.4 }}
+            className="relative font-bold text-white tracking-tight font-mono-numbers leading-none"
+            style={{
+              fontSize:   'clamp(2.6rem, 9vw, 3.75rem)',
+              textShadow: '0 0 48px rgba(99,102,241,0.5), 0 2px 12px rgba(0,0,0,0.4)',
             }}
           >
             {formatCurrency(Math.max(safeToSpend, 0))}
           </motion.p>
           {totalBudget > 0 && (
-            <p className="text-sm text-white/35 mt-1.5">
+            <p className="text-[13px] text-white/30 mt-2 relative">
               of {formatCurrency(totalBudget)} budget
             </p>
           )}
         </div>
 
         {/* Mood message */}
-        <div className="flex items-center gap-1.5 mb-5 mt-3">
+        <div className="flex items-center gap-1.5 mb-5">
           <Sparkles className="w-3 h-3 flex-shrink-0" style={{ color: mood.color }} />
           <p className="text-xs font-medium" style={{ color: mood.color }}>
             {mood.text}
@@ -120,47 +124,57 @@ export function HeroCard({
 
         {/* Progress bar */}
         <div className="mb-5">
-          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
+          <div
+            className="h-1.5 rounded-full overflow-hidden"
+            style={{ background: 'rgba(255,255,255,0.1)' }}
+          >
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${pct}%` }}
-              transition={{ duration: 0.9, delay: 0.2, ease: 'easeOut' }}
+              transition={{ duration: 0.9, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
               className="h-full rounded-full"
               style={{
                 background: `linear-gradient(90deg, #4F46E5, ${progressColor})`,
-                boxShadow: `0 0 8px ${progressColor}60`,
+                boxShadow:  `0 0 8px ${progressColor}70`,
               }}
             />
           </div>
         </div>
 
-        {/* Income vs Expenses */}
+        {/* Income / Spent summary */}
         <div className="grid grid-cols-2 gap-3">
+          {/* Income */}
           <div
-            className="rounded-2xl p-3 border"
-            style={{ background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.07)' }}
+            className="rounded-2xl p-3.5 border relative overflow-hidden"
+            style={{
+              background:  'rgba(255,255,255,0.03)',
+              borderColor: 'rgba(74,222,128,0.14)',
+              borderLeft:  '2px solid rgba(74,222,128,0.45)',
+            }}
           >
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <div className="w-4 h-4 rounded flex items-center justify-center bg-green-500/15">
-                <TrendingUp className="w-2.5 h-2.5 text-green-400" />
-              </div>
-              <span className="text-xs text-white/40">Income</span>
+            <div className="flex items-center gap-1.5 mb-2">
+              <TrendingUp className="w-3 h-3 text-green-400/70" />
+              <span className="text-[11px] font-medium text-white/40">Income</span>
             </div>
-            <p className="text-base font-bold text-white font-mono-numbers">
+            <p className="text-[15px] font-bold text-white/90 font-mono-numbers tabular-nums">
               {formatCurrency(totalIncome)}
             </p>
           </div>
+
+          {/* Spent */}
           <div
-            className="rounded-2xl p-3 border"
-            style={{ background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.07)' }}
+            className="rounded-2xl p-3.5 border relative overflow-hidden"
+            style={{
+              background:  'rgba(255,255,255,0.03)',
+              borderColor: 'rgba(248,113,113,0.14)',
+              borderLeft:  '2px solid rgba(248,113,113,0.4)',
+            }}
           >
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <div className="w-4 h-4 rounded flex items-center justify-center bg-red-500/15">
-                <TrendingDown className="w-2.5 h-2.5 text-red-400" />
-              </div>
-              <span className="text-xs text-white/40">Spent</span>
+            <div className="flex items-center gap-1.5 mb-2">
+              <TrendingDown className="w-3 h-3 text-red-400/70" />
+              <span className="text-[11px] font-medium text-white/40">Spent</span>
             </div>
-            <p className="text-base font-bold text-white font-mono-numbers">
+            <p className="text-[15px] font-bold text-white/90 font-mono-numbers tabular-nums">
               {formatCurrency(totalSpent)}
             </p>
           </div>
