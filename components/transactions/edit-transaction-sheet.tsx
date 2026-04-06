@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Trash2, Loader2 } from 'lucide-react'
+import { Trash2, Loader2, Tag } from 'lucide-react'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useTransactions } from '@/lib/hooks/use-transactions'
 import { useCategories } from '@/lib/hooks/use-categories'
 import { formatCurrency } from '@/lib/utils/format'
+import { TagTransactionSheet, TagBadge } from '@/components/transactions/tag-transaction-sheet'
 import type { Transaction } from '@/lib/types'
 
 interface EditTransactionSheetProps {
@@ -26,6 +27,7 @@ export function EditTransactionSheet({ transaction, open, onOpenChange, onDelete
   const [date, setDate] = useState(transaction.date)
   const [saving, setSaving] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [tagSheetOpen, setTagSheetOpen] = useState(false)
 
   const { update } = useTransactions()
   const { categories } = useCategories(transaction.type)
@@ -38,6 +40,7 @@ export function EditTransactionSheet({ transaction, open, onOpenChange, onDelete
   }
 
   return (
+    <>
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="px-0">
         <SheetHeader className="px-6 pb-4">
@@ -88,6 +91,33 @@ export function EditTransactionSheet({ transaction, open, onOpenChange, onDelete
             </div>
           </div>
 
+          {/* ── Classification ──────────────────────────────────────── */}
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground uppercase tracking-wider">
+              Classification
+            </Label>
+            <button
+              onClick={() => setTagSheetOpen(true)}
+              className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl border text-sm transition-all duration-150 hover:border-indigo-500/30"
+              style={{
+                background:  'rgba(255,255,255,0.03)',
+                borderColor: transaction.tag_type ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)',
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <Tag className="w-3.5 h-3.5 text-muted-foreground/50" />
+                {transaction.tag_type ? (
+                  <TagBadge transaction={transaction} />
+                ) : (
+                  <span className="text-muted-foreground/50">Not classified</span>
+                )}
+              </div>
+              <span className="text-xs text-muted-foreground/40">
+                {transaction.tag_type ? 'Edit' : 'Classify'}
+              </span>
+            </button>
+          </div>
+
           <div className="flex gap-3 pt-2">
             {confirmDelete ? (
               <>
@@ -117,5 +147,12 @@ export function EditTransactionSheet({ transaction, open, onOpenChange, onDelete
         </div>
       </SheetContent>
     </Sheet>
+
+    <TagTransactionSheet
+      transaction={transaction}
+      open={tagSheetOpen}
+      onOpenChange={setTagSheetOpen}
+    />
+    </>
   )
 }

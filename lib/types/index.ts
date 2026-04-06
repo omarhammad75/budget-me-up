@@ -1,6 +1,17 @@
 export type TransactionType = 'expense' | 'income'
 export type RecurringInterval = 'daily' | 'weekly' | 'monthly' | 'yearly'
 
+// ── Transaction tagging ──────────────────────────────────────────────────────
+// tag_type classifies the nature of an obligation.
+// This system is designed to be enriched by future Plaid-imported data.
+export type TagType = 'recurring' | 'subscription' | 'payment_plan'
+export type TagFrequency = 'weekly' | 'biweekly' | 'monthly'
+
+// source_type distinguishes manually entered transactions from future
+// bank-sync imported transactions (e.g. via Plaid). Never remove 'manual'
+// as the default — all current data uses it.
+export type TransactionSource = 'manual' | 'imported'
+
 export interface Profile {
   id: string
   full_name: string | null
@@ -34,6 +45,20 @@ export interface Transaction {
   is_recurring: boolean
   recurring_interval: RecurringInterval | null
   created_at: string
+
+  // ── Tagging fields (added via migration 002_transaction_tags) ──
+  // All nullable for backward compatibility with existing rows.
+  tag_type: TagType | null
+  tag_frequency: TagFrequency | null
+  tag_label: string | null        // Subscription name (e.g. "Netflix") or custom label
+  tag_total_payments: number | null   // Payment plans: original number of instalments
+  tag_remaining_payments: number | null // Payment plans: how many are left
+  tag_next_date: string | null     // ISO date of next expected charge
+
+  // ── Source tracking (Plaid-ready) ──
+  // 'manual' = user-entered. 'imported' = bank-sync (future).
+  // Future: also store external_id and provider_account_id for dedup.
+  source_type: TransactionSource
 }
 
 export interface Budget {
@@ -93,4 +118,14 @@ export interface DashboardData {
   recentTransactions: Transaction[]
   insights: MonthlyInsight[]
   savingsGoals: SavingsGoal[]
+}
+
+// ── Affordability check result ───────────────────────────────────────────────
+export type AffordabilityStatus = 'safe' | 'caution' | 'risky'
+
+export interface AffordabilityResult {
+  status: AffordabilityStatus
+  remaining: number
+  percentUsed: number
+  canAfford: boolean
 }

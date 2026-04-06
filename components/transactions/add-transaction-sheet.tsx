@@ -60,6 +60,13 @@ export function AddTransactionSheet({ open, onOpenChange, onSuccess }: AddTransa
       date,
       is_recurring: isRecurring,
       recurring_interval: null,
+      tag_type:               null,
+      tag_frequency:          null,
+      tag_label:              null,
+      tag_total_payments:     null,
+      tag_remaining_payments: null,
+      tag_next_date:          null,
+      source_type:            'manual',
     })
 
     setSaving(false)

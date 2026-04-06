@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import { Repeat } from 'lucide-react'
 import { CategoryIcon } from '@/components/shared/category-icon'
+import { TagBadge } from '@/components/transactions/tag-transaction-sheet'
 import { formatCurrency, formatDate } from '@/lib/utils/format'
 import type { Transaction } from '@/lib/types'
 
@@ -42,6 +43,11 @@ export function TransactionItem({ transaction, index = 0, onClick }: Transaction
           <span className="mx-1 text-muted-foreground/25">·</span>
           {formatDate(transaction.date)}
         </p>
+        {transaction.tag_type && (
+          <div className="mt-1">
+            <TagBadge transaction={transaction} />
+          </div>
+        )}
       </div>
 
       {/* Amount */}

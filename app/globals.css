@@ -159,9 +159,3 @@ nav, .no-select {
   }
 }
 
-/* ── Recharts dark theme ────────────────────── */
-.recharts-text { fill: hsl(220 9% 55%) !important; }
-.recharts-cartesian-grid-horizontal line,
-.recharts-cartesian-grid-vertical line {
-  stroke: rgba(255,255,255,0.04) !important;
-}

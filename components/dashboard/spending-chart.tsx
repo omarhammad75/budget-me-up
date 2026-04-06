@@ -1,6 +1,5 @@
 'use client'
 
-import { PieChart, Pie, Cell, Tooltip } from 'recharts'
 import { motion } from 'framer-motion'
 import { formatCurrency } from '@/lib/utils/format'
 import type { SpendingByCategory } from '@/lib/types'
@@ -9,125 +8,167 @@ interface SpendingChartProps {
   data: SpendingByCategory[]
 }
 
-// Slightly larger donut for better balance
-const DONUT_SIZE = 124
-
 export function SpendingChart({ data }: SpendingChartProps) {
   if (!data.length) return null
 
-  const chartData = data.slice(0, 6).map((d) => ({
-    name: d.category.name,
-    value: d.amount,
-    color: d.category.color,
-    icon: d.category.icon,
-    percentage: d.percentage,
-  }))
+  // Sort highest → lowest, cap at 6
+  const sorted = [...data]
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, 6)
 
-  const total = chartData.reduce((s, d) => s + d.value, 0)
+  const topCategory = sorted[0]
+  const total = sorted.reduce((s, d) => s + d.amount, 0)
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.15 }}
-      className="mx-5 mt-4 rounded-2xl border p-4"
+      className="mx-5 mt-4 rounded-2xl border overflow-hidden"
       style={{
-        background: '#111827',
-        borderColor: 'rgba(255,255,255,0.06)',
+        background:   '#111827',
+        borderColor:  'rgba(255,255,255,0.06)',
       }}
     >
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-foreground">Spending Breakdown</h2>
-        <span className="text-xs text-muted-foreground/60 font-mono-numbers">
+      {/* ── Header ───────────────────────────────────── */}
+      <div
+        className="flex items-center justify-between px-4 pt-3.5 pb-3 border-b"
+        style={{ borderColor: 'rgba(255,255,255,0.05)' }}
+      >
+        <div className="min-w-0">
+          <p className="text-[13px] font-semibold text-foreground leading-none">
+            Spending Breakdown
+          </p>
+          {topCategory && (
+            <p className="text-[11px] text-muted-foreground/45 mt-1 truncate">
+              Most on{' '}
+              <span className="text-muted-foreground/65">
+                {topCategory.category.icon} {topCategory.category.name}
+              </span>
+            </p>
+          )}
+        </div>
+
+        <span
+          className="ml-3 flex-shrink-0 text-[12px] font-semibold font-mono-numbers tabular-nums px-2.5 py-1 rounded-lg"
+          style={{
+            background:  'rgba(255,255,255,0.04)',
+            color:       'rgba(249,250,251,0.45)',
+            border:      '1px solid rgba(255,255,255,0.06)',
+          }}
+        >
           {formatCurrency(total)}
         </span>
       </div>
 
-      <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-center">
-        <div
-          className="relative flex-shrink-0"
-          style={{ width: DONUT_SIZE, height: DONUT_SIZE }}
-        >
-          <PieChart width={DONUT_SIZE} height={DONUT_SIZE}>
-            <Pie
-              data={chartData}
-              cx={DONUT_SIZE / 2}
-              cy={DONUT_SIZE / 2}
-              innerRadius={40}
-              outerRadius={54}
-              dataKey="value"
-              strokeWidth={0}
-              paddingAngle={2}
+      {/* ── Category rows ────────────────────────────── */}
+      <div className="px-4 py-2">
+        {sorted.map((item, i) => {
+          const pct   = total > 0 ? (item.amount / total) * 100 : 0
+          const color = item.category.color
+          const isTop = i === 0
+
+          return (
+            <motion.div
+              key={item.category.id}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3, delay: 0.06 + i * 0.04 }}
+              className={i < sorted.length - 1 ? 'border-b' : ''}
+              style={{ borderColor: 'rgba(255,255,255,0.04)' }}
             >
-              {chartData.map((entry, i) => (
-                <Cell key={i} fill={entry.color} />
-              ))}
-            </Pie>
+              <div className="py-3 flex items-center gap-2.5">
 
-            <Tooltip
-              content={({ active, payload }) => {
-                if (active && payload?.[0]) {
-                  const d = payload[0].payload
-                  return (
-                    <div
-                      className="rounded-xl border px-3 py-2 text-xs shadow-lg"
-                      style={{
-                        background: '#1a2035',
-                        borderColor: 'rgba(255,255,255,0.08)',
+                {/* Icon — compact, subtle */}
+                <div
+                  className="w-5 h-5 rounded-md flex items-center justify-center text-[10px] flex-shrink-0"
+                  style={{
+                    background: `${color}16`,
+                    border:     `1px solid ${color}22`,
+                  }}
+                >
+                  {item.category.icon}
+                </div>
+
+                {/* Name + bar */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-[12px] font-medium text-foreground/85 truncate leading-none mb-1.5">
+                    {item.category.name}
+                  </p>
+
+                  {/* Progress bar track */}
+                  <div
+                    className="h-1 rounded-full overflow-hidden"
+                    style={{ background: 'rgba(255,255,255,0.06)' }}
+                  >
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${pct}%` }}
+                      transition={{
+                        duration: 0.55,
+                        delay:    0.1 + i * 0.06,
+                        ease:     [0.16, 1, 0.3, 1],
                       }}
-                    >
-                      <p className="font-semibold text-foreground">
-                        {d.icon} {d.name}
-                      </p>
-                      <p className="mt-0.5 text-muted-foreground">
-                        {formatCurrency(d.value)} · {Math.round(d.percentage)}%
-                      </p>
-                    </div>
-                  )
-                }
-                return null
-              }}
-            />
-          </PieChart>
+                      className="h-full rounded-full"
+                      style={{
+                        background:  `linear-gradient(90deg, ${color}BB, ${color})`,
+                        boxShadow:   isTop ? `0 0 5px ${color}55` : 'none',
+                      }}
+                    />
+                  </div>
+                </div>
 
-          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-            <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground/45">
-              Total
-            </p>
-            <p className="mt-1 text-base font-bold leading-none text-foreground font-mono-numbers">
-              {formatCurrency(total)}
-            </p>
-          </div>
-        </div>
-
-        <div className="w-full min-w-0 flex-1 space-y-3">
-          {chartData.map((item, i) => (
-            <div key={i} className="flex flex-col items-center gap-5 sm:flex-row sm:items-center">
-              <div
-                className="h-2 w-2 rounded-full flex-shrink-0"
-                style={{ backgroundColor: item.color }}
-              />
-
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm leading-none">{item.icon}</span>
-                  <span className="truncate text-sm font-medium text-foreground/90">
-                    {item.name}
-                  </span>
+                {/* Right: amount + percentage stacked */}
+                <div className="flex-shrink-0 text-right" style={{ minWidth: 64 }}>
+                  <p
+                    className="text-[12px] font-semibold font-mono-numbers tabular-nums leading-none"
+                    style={{ color: isTop ? color : 'rgba(249,250,251,0.75)' }}
+                  >
+                    {formatCurrency(item.amount)}
+                  </p>
+                  <p
+                    className="text-[10px] font-mono-numbers tabular-nums mt-1 leading-none"
+                    style={{ color: 'rgba(249,250,251,0.28)' }}
+                  >
+                    {Math.round(pct)}%
+                  </p>
                 </div>
               </div>
-
-              <span className="flex-shrink-0 text-sm text-muted-foreground/70 font-mono-numbers tabular-nums">
-                {formatCurrency(item.value)}
-              </span>
-
-              <span className="w-9 flex-shrink-0 text-right text-xs text-muted-foreground/45 font-mono-numbers tabular-nums">
-                {Math.round(item.percentage)}%
-              </span>
-            </div>
-          ))}
-        </div>
+            </motion.div>
+          )
+        })}
       </div>
+
+      {/* ── Footer mini-strip ────────────────────────── */}
+      {sorted.length >= 3 && (
+        <div
+          className="px-4 py-2.5 border-t flex items-center justify-between"
+          style={{ borderColor: 'rgba(255,255,255,0.05)' }}
+        >
+          <span className="text-[10px] text-muted-foreground/30">
+            Top {sorted.length} categories this month
+          </span>
+
+          {/* Proportional color strip */}
+          <div className="flex items-center gap-px h-1.5 rounded-full overflow-hidden" style={{ width: 64 }}>
+            {sorted.map((item) => {
+              const pct = total > 0 ? (item.amount / total) * 100 : 0
+              return (
+                <div
+                  key={item.category.id}
+                  className="h-full"
+                  style={{
+                    width:      `${pct}%`,
+                    background: item.category.color,
+                    opacity:    0.65,
+                    flexShrink: 0,
+                  }}
+                />
+              )
+            })}
+          </div>
+        </div>
+      )}
     </motion.div>
   )
 }

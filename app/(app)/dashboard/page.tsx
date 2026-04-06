@@ -2,13 +2,14 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Header } from '@/components/layout/header'
 import { HeroCard } from '@/components/dashboard/hero-card'
 import { SpendingChart } from '@/components/dashboard/spending-chart'
 import { InsightsCard } from '@/components/dashboard/insights-card'
 import { RecentTransactionsList } from '@/components/dashboard/recent-transactions-list'
 import { BudgetOverviewStrip } from '@/components/dashboard/budget-overview-strip'
+import { AffordabilityChecker, AffordabilityTrigger } from '@/components/dashboard/affordability-checker'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useTransactions } from '@/lib/hooks/use-transactions'
 import { useBudgets } from '@/lib/hooks/use-budgets'
@@ -56,6 +57,7 @@ export default function DashboardPage() {
 
   const greeting = getGreeting()
   const firstName = profile?.full_name?.split(' ')[0] ?? 'there'
+  const [affordOpen, setAffordOpen] = useState(false)
 
   return (
     <div className="pb-6">
@@ -72,6 +74,16 @@ export default function DashboardPage() {
             totalIncome={dashboardData.totalIncome}
             totalSpent={dashboardData.totalSpent}
             month={formatMonth(month, year)}
+          />
+
+          <div className="px-5 mt-3 w-full">
+            <AffordabilityTrigger onClick={() => setAffordOpen(true)} />
+          </div>
+
+          <AffordabilityChecker
+            open={affordOpen}
+            onOpenChange={setAffordOpen}
+            safeToSpend={dashboardData.safeToSpend}
           />
 
           {dashboardData.spendingByCategory.length > 0 && (
